@@ -1,0 +1,35 @@
+{
+  "node": {
+    "4060aa4ef51857bae96849b62dd26a5640744b075e": {
+      "workers": {
+        "app/admin/products/page": {
+          "moduleId": "[project]/.next-internal/server/app/admin/products/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/product-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "addProduct",
+          "filename": "src/lib/product-actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/products/page": "action-browser"
+      },
+      "exportedName": "addProduct",
+      "filename": "src/lib/product-actions.ts"
+    },
+    "400b79f202db494eb0900239090c7a07cf1efaa7bf": {
+      "workers": {
+        "app/admin/products/page": {
+          "moduleId": "[project]/.next-internal/server/app/admin/products/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/product-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "updateProduct",
+          "filename": "src/lib/product-actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/products/page": "action-browser"
+      },
+      "exportedName": "updateProduct",
+      "filename": "src/lib/product-actions.ts"
+    }
+  },
+  "edge": {}
+}

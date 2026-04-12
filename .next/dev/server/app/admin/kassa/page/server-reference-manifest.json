@@ -1,0 +1,50 @@
+{
+  "node": {
+    "00372b6f3a16347f082fafc66cf3a8f348d568813a": {
+      "workers": {
+        "app/admin/kassa/page": {
+          "moduleId": "[project]/.next-internal/server/app/admin/kassa/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/product-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "getProducts",
+          "filename": "src/lib/product-actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/kassa/page": "action-browser"
+      },
+      "exportedName": "getProducts",
+      "filename": "src/lib/product-actions.ts"
+    },
+    "784f12991ac472cce3925bad5dd60c488c271ec2a9": {
+      "workers": {
+        "app/admin/kassa/page": {
+          "moduleId": "[project]/.next-internal/server/app/admin/kassa/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/product-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "registerSale",
+          "filename": "src/lib/product-actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/kassa/page": "action-browser"
+      },
+      "exportedName": "registerSale",
+      "filename": "src/lib/product-actions.ts"
+    },
+    "40122411613c3a7f8cd8e969d4b7d9cd616b375f94": {
+      "workers": {
+        "app/admin/kassa/page": {
+          "moduleId": "[project]/.next-internal/server/app/admin/kassa/page/actions.js { ACTIONS_MODULE0 => \"[project]/src/lib/product-actions.ts [app-rsc] (ecmascript)\" } [app-rsc] (server actions loader, ecmascript)",
+          "async": true,
+          "exportedName": "saveReportToFile",
+          "filename": "src/lib/product-actions.ts"
+        }
+      },
+      "layer": {
+        "app/admin/kassa/page": "action-browser"
+      },
+      "exportedName": "saveReportToFile",
+      "filename": "src/lib/product-actions.ts"
+    }
+  },
+  "edge": {}
+}

@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 58, "column": 0}, "map": {"version":3,"sources":["file:///Users/rasul/Desktop/zhest/src/app/api/reports/route.ts"],"sourcesContent":["import { NextResponse } from 'next/server';\nimport fs from 'fs';\nimport path from 'path';\n\nexport async function GET() {\n  try {\n    const reportPath = path.resolve(process.cwd(), 'reports.json');\n    if (fs.existsSync(reportPath)) {\n      const data = fs.readFileSync(reportPath, 'utf8');\n      return NextResponse.json(JSON.parse(data));\n    }\n    return NextResponse.json([]);\n  } catch (error) {\n    return NextResponse.json({ error: 'Failed to read reports' }, { status: 500 });\n  }\n}\n"],"names":[],"mappings":";;;;AAAA;AACA;AACA;;;;AAEO,eAAe;IACpB,IAAI;QACF,MAAM,aAAa,4GAAI,CAAC,OAAO,CAAC,QAAQ,GAAG,IAAI;QAC/C,IAAI,wGAAE,CAAC,UAAU,CAAC,aAAa;YAC7B,MAAM,OAAO,wGAAE,CAAC,YAAY,CAAC,YAAY;YACzC,OAAO,gJAAY,CAAC,IAAI,CAAC,KAAK,KAAK,CAAC;QACtC;QACA,OAAO,gJAAY,CAAC,IAAI,CAAC,EAAE;IAC7B,EAAE,OAAO,OAAO;QACd,OAAO,gJAAY,CAAC,IAAI,CAAC;YAAE,OAAO;QAAyB,GAAG;YAAE,QAAQ;QAAI;IAC9E;AACF"}}]
+}

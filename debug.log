@@ -1,0 +1,48 @@
+2026-02-11T20:27:13.277Z [console][error] Image with src "https://i.pravatar.cc/100?img=11" was detected as the Largest Contentful Paint (LCP). Please add the `loading="eager"` property if this image is above the fold.
+Read more: https://nextjs.org/docs/app/api-reference/components/image#loading
+2026-04-12T17:35:06.700Z [console][warn] [Fast Refresh] done in 45ms
+2026-04-12T17:35:06.700Z [console][log] [Fast Refresh] done in 45ms
+2026-04-12T17:35:06.700Z [console][warn] [Fast Refresh] done in 45ms
+2026-04-12T17:35:06.700Z [console][log] [Fast Refresh] done in 45ms
+2026-04-12T18:42:41.872Z [console][error] ./src/app/admin/workspace/page.tsx:499:15
+Parsing ecmascript source code failed
+  497 |                   </div>
+  498 |                 )}
+> 499 |               </>
+      |               ^
+  500 |             )}
+  501 |           </div>
+  502 |         );
+
+Expression expected
+
+Import traces:
+  Client Component Browser:
+    ./src/app/admin/workspace/page.tsx [Client Component Browser]
+    ./src/app/admin/workspace/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/admin/workspace/page.tsx [Client Component SSR]
+    ./src/app/admin/workspace/page.tsx [Server Component]
+2026-04-12T18:42:41.872Z [console][error] ./src/app/admin/workspace/page.tsx:499:16
+Parsing ecmascript source code failed
+  497 |                   </div>
+  498 |                 )}
+> 499 |               </>
+      |                ^^
+  500 |             )}
+  501 |           </div>
+  502 |         );
+
+Unterminated regexp literal
+
+Import traces:
+  Client Component Browser:
+    ./src/app/admin/workspace/page.tsx [Client Component Browser]
+    ./src/app/admin/workspace/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/admin/workspace/page.tsx [Client Component SSR]
+    ./src/app/admin/workspace/page.tsx [Server Component]
+2026-04-12T18:42:41.938Z [console][warn] [Fast Refresh] rebuilding
+2026-04-12T18:42:41.938Z [console][log] [Fast Refresh] rebuilding

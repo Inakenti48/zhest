@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-metal-50: #f8fafc;
+  --color-metal-100: #f1f5f9;
+  --color-metal-200: #e2e8f0;
+  --color-metal-300: #cbd5e1;
+  --color-metal-400: #94a3b8;
+  --color-metal-500: #64748b;
+  --color-metal-600: #475569;
+  --color-metal-700: #334155;
+  --color-metal-800: #1e293b;
+  --color-metal-900: #0f172a;
+
+  @keyframes blob {
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0px, 0px) scale(1); }
+  }
+  --animation-blob: blob 7s infinite;
+}
+
+:root {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+}
+
+.metal-gradient {
+  background: linear-gradient(135deg, #475569 0%, #1e293b 100%);
+}
+
+  .card-shadow {
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+
+  @utility no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
