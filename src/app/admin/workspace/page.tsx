@@ -55,24 +55,39 @@ export default function WorkspacePage() {
   const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
-    // Nesting State - Default 125x250 sheet
-      const [nestingParams, setNestingParams] = useState({
-        sheetWidth: 125,
-        sheetLength: 250,
-        partWidth: 31.2,
-        partLength: 250
+      // Nesting State - Default 125x250 sheet
+        const [nestingParams, setNestingParams] = useState({
+          sheetWidth: 125,
+          sheetLength: 250,
+          partWidth: 0,
+          partLength: 0,
+          targetParts: 0
+        });
+
+
+      const [nestingResults, setNestingResults] = useState({
+        countWidth: 0,
+        countLength: 0,
+        totalParts: 0,
+        wasteWidth: 0,
+        wasteLength: 0,
+        efficiency: 0,
+        sheetsNeeded: 0
       });
 
-    const [nestingResults, setNestingResults] = useState({
-      countWidth: 0,
-      countLength: 0,
-      totalParts: 0,
-      wasteWidth: 0,
-      wasteLength: 0,
-      efficiency: 0
-    });
 
-    const [newAttendance, setNewAttendance] = useState({
+      const [nestingUnits, setNestingUnits] = useState({
+        sheetWidth: 'cm',
+        sheetLength: 'cm',
+        partWidth: 'cm',
+        partLength: 'cm'
+      });
+  
+      const [extraCalc, setExtraCalc] = useState({
+        coeff: 0
+      });
+  
+      const [newAttendance, setNewAttendance] = useState({
 
     worker_id: '',
     date: new Date().toISOString().split('T')[0],
@@ -86,8 +101,8 @@ export default function WorkspacePage() {
     worker_id: '',
     month: new Date().toISOString().slice(0, 7),
     amount: '',
-    bonus: '0',
-    deductions: '0'
+    bonus: '',
+    deductions: ''
   });
 
   const [newExpense, setNewExpense] = useState({
@@ -125,19 +140,23 @@ export default function WorkspacePage() {
         const wasteW = nestingParams.sheetWidth - (countW * (bestIsRotated ? effectivePartLength : effectivePartWidth));
         const wasteL = nestingParams.sheetLength - (countL * (bestIsRotated ? effectivePartWidth : effectivePartLength));
         
-        const partArea = effectivePartWidth * effectivePartLength;
-        const sheetArea = nestingParams.sheetWidth * nestingParams.sheetLength;
-        const efficiency = sheetArea > 0 ? ((total * partArea) / sheetArea) * 100 : 0;
+          const partArea = effectivePartWidth * effectivePartLength;
+          const sheetArea = nestingParams.sheetWidth * nestingParams.sheetLength;
+          const efficiency = sheetArea > 0 ? ((total * partArea) / sheetArea) * 100 : 0;
+          
+          const sheetsNeeded = total > 0 ? Math.ceil(nestingParams.targetParts / total) : 0;
 
-        setNestingResults({
-          countWidth: countW,
-          countLength: countL,
-          totalParts: total,
-          wasteWidth: wasteW,
-          wasteLength: wasteL,
-          efficiency: Math.round(efficiency)
-        });
-      }, [nestingParams]);
+          setNestingResults({
+            countWidth: countW,
+            countLength: countL,
+            totalParts: total,
+            wasteWidth: wasteW,
+            wasteLength: wasteL,
+            efficiency: Math.round(efficiency),
+            sheetsNeeded: sheetsNeeded
+          });
+        }, [nestingParams]);
+
 
 
   const fetchData = async () => {
@@ -437,12 +456,12 @@ export default function WorkspacePage() {
                             </td>
                           </tr>
                         ))}
-                      </tbody>
-                    </table>
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
 
           {activeTab === 'salary' && (
@@ -468,27 +487,27 @@ export default function WorkspacePage() {
                     onChange={e => setNewSalary({ ...newSalary, month: e.target.value })}
                     className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm min-w-0 w-full focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                   />
-                  <input
-                    type="number"
-                    value={newSalary.amount}
-                    onChange={e => setNewSalary({ ...newSalary, amount: e.target.value })}
-                    placeholder="Сумма"
-                    className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm min-w-0 w-full focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                  />
-                  <input
-                    type="number"
-                    value={newSalary.bonus}
-                    onChange={e => setNewSalary({ ...newSalary, bonus: e.target.value })}
-                    placeholder="Бонус"
-                    className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm min-w-0 w-full focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                  />
-                  <input
-                    type="number"
-                    value={newSalary.deductions}
-                    onChange={e => setNewSalary({ ...newSalary, deductions: e.target.value })}
-                    placeholder="Удержания"
-                    className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm min-w-0 w-full focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                  />
+                    <input
+                      type="number"
+                      value={newSalary.amount}
+                      onChange={e => setNewSalary({ ...newSalary, amount: e.target.value.replace(/^0+(?=\d)/, '') })}
+                      placeholder="Сумма"
+                      className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm min-w-0 w-full focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
+                    <input
+                      type="number"
+                      value={newSalary.bonus}
+                      onChange={e => setNewSalary({ ...newSalary, bonus: e.target.value.replace(/^0+(?=\d)/, '') })}
+                      placeholder="Бонус"
+                      className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm min-w-0 w-full focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
+                    <input
+                      type="number"
+                      value={newSalary.deductions}
+                      onChange={e => setNewSalary({ ...newSalary, deductions: e.target.value.replace(/^0+(?=\d)/, '') })}
+                      placeholder="Удержания"
+                      className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm min-w-0 w-full focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
                   <button
                     onClick={addSalary}
                     className="bg-blue-600 hover:bg-blue-700 rounded-xl px-6 py-3 font-black uppercase text-[10px] sm:text-xs flex items-center justify-center gap-2 whitespace-nowrap min-w-fit w-full sm:col-span-2 lg:col-span-1 shadow-lg shadow-blue-600/20"
@@ -562,13 +581,13 @@ export default function WorkspacePage() {
                     placeholder="Описание"
                     className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm min-w-0 w-full focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                   />
-                  <input
-                    type="number"
-                    value={newExpense.amount}
-                    onChange={e => setNewExpense({ ...newExpense, amount: e.target.value })}
-                    placeholder="Сумма"
-                    className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm min-w-0 w-full focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                  />
+                    <input
+                      type="number"
+                      value={newExpense.amount}
+                      onChange={e => setNewExpense({ ...newExpense, amount: e.target.value.replace(/^0+(?=\d)/, '') })}
+                      placeholder="Сумма"
+                      className="bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm min-w-0 w-full focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    />
                   <input
                     type="date"
                     value={newExpense.date}
@@ -627,105 +646,252 @@ export default function WorkspacePage() {
 
             {activeTab === 'nesting' && (
               <div className="space-y-6">
-                <div className="glass p-4 sm:p-8 relative">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px] pointer-events-none" />
-                  <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-600/5 blur-[100px] pointer-events-none" />
+                <div className="glass overflow-hidden relative border border-white/10 shadow-2xl rounded-[40px]">
+                  {/* Декоративные свечения */}
+                  <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 blur-[120px] pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-600/5 blur-[120px] pointer-events-none" />
 
-                  <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6 mb-8 relative z-10 bg-white/5 p-5 sm:p-8 rounded-[32px] sm:rounded-[40px] border border-white/10 shadow-2xl">
-                    <div className="flex items-center gap-4 sm:gap-6">
-                      <div className="p-4 sm:p-5 bg-gradient-to-br from-blue-600 to-blue-400 rounded-2xl sm:rounded-3xl shadow-lg shadow-blue-500/20 text-white shrink-0">
-                        <Scissors size={24} className="sm:w-7 sm:h-7" />
+                  <div className="relative z-10 p-6 sm:p-10">
+                    {/* Header */}
+                    <div className="flex items-center gap-6 mb-10 pb-10 border-b border-white/10">
+                      <div className="p-5 bg-gradient-to-br from-blue-600 to-blue-400 rounded-3xl shadow-lg shadow-blue-500/20 text-white">
+                        <Scissors size={28} />
                       </div>
                       <div>
-                        <h2 className="text-xl sm:text-3xl font-black uppercase tracking-tight">РАСКРОЙ</h2>
-                        <p className="text-metal-400 text-[10px] sm:text-sm font-medium">Расчет количества изделий на листе</p>
+                        <h2 className="text-2xl sm:text-4xl font-black uppercase tracking-tight">КАЛЬКУЛЯТОР РАСКРОЯ</h2>
+                        <p className="text-metal-400 text-xs sm:text-sm font-medium uppercase tracking-widest mt-1">Единая система расчёта изделий и стоимости</p>
                       </div>
                     </div>
-                    
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 w-full xl:w-auto">
-                        <div className="space-y-1 bg-black/40 px-4 sm:px-5 py-2 sm:py-3 rounded-2xl sm:rounded-3xl border border-white/10">
-                          <span className="text-[10px] sm:text-[11px] font-black text-blue-500 uppercase tracking-tighter">Лист Ш (см)</span>
-                            <input
-                              type="number"
-                              step="0.01"
-                              value={nestingParams.sheetWidth}
-                              onChange={(e) => setNestingParams({ ...nestingParams, sheetWidth: Number(e.target.value) })}
-                              className="w-full bg-transparent border-none p-0 text-base sm:text-lg font-black focus:ring-0 text-white"
-                            />
+
+                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-10">
+                      {/* Left Side: Inputs */}
+                      <div className="xl:col-span-4 space-y-8">
+                        <div>
+                          <h3 className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" /> Параметры листа
+                          </h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2 bg-white/5 p-4 rounded-3xl border border-white/10 focus-within:border-blue-500/50 transition-all">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[10px] font-black text-metal-500 uppercase">Ширина</span>
+                                <div className="flex gap-1 bg-black/40 p-0.5 rounded-lg border border-white/5">
+                                  {['cm', 'm'].map(u => (
+                                    <button 
+                                      key={u}
+                                      onClick={() => setNestingUnits({ ...nestingUnits, sheetWidth: u as any })}
+                                      className={`text-[8px] font-black px-1.5 py-0.5 rounded transition-all ${nestingUnits.sheetWidth === u ? 'bg-blue-600 text-white' : 'text-metal-500 hover:text-metal-400'}`}
+                                    >
+                                      {u.toUpperCase()}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    value={nestingUnits.sheetWidth === 'cm' ? (nestingParams.sheetWidth || '') : (nestingParams.sheetWidth ? nestingParams.sheetWidth / 100 : '')}
+                                    onChange={(e) => {
+                                      const val = parseFloat(e.currentTarget.value.replace(/^0+(?=\d)/, '')) || 0;
+                                      setNestingParams({ ...nestingParams, sheetWidth: nestingUnits.sheetWidth === 'cm' ? val : val * 100 });
+                                    }}
+                                    className="w-full bg-transparent border-none p-0 text-2xl font-black focus:ring-0 text-white"
+                                  />
+                                </div>
+                                <div className="space-y-2 bg-white/5 p-4 rounded-3xl border border-white/10 focus-within:border-blue-500/50 transition-all">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-black text-metal-500 uppercase">Длина</span>
+                                    <div className="flex gap-1 bg-black/40 p-0.5 rounded-lg border border-white/5">
+                                      {['cm', 'm'].map(u => (
+                                        <button 
+                                          key={u}
+                                          onClick={() => setNestingUnits({ ...nestingUnits, sheetLength: u as any })}
+                                          className={`text-[8px] font-black px-1.5 py-0.5 rounded transition-all ${nestingUnits.sheetLength === u ? 'bg-blue-600 text-white' : 'text-metal-500 hover:text-metal-400'}`}
+                                        >
+                                          {u.toUpperCase()}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    value={nestingUnits.sheetLength === 'cm' ? (nestingParams.sheetLength || '') : (nestingParams.sheetLength ? nestingParams.sheetLength / 100 : '')}
+                                    onChange={(e) => {
+                                      const val = parseFloat(e.currentTarget.value.replace(/^0+(?=\d)/, '')) || 0;
+                                      setNestingParams({ ...nestingParams, sheetLength: nestingUnits.sheetLength === 'cm' ? val : val * 100 });
+                                    }}
+                                    className="w-full bg-transparent border-none p-0 text-2xl font-black focus:ring-0 text-white"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+    
+                            <div>
+                              <h3 className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" /> Параметры изделия
+                              </h3>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2 bg-white/5 p-4 rounded-3xl border border-white/10 focus-within:border-orange-500/50 transition-all">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-black text-metal-500 uppercase">Ширина (W)</span>
+                                    <div className="flex gap-1 bg-black/40 p-0.5 rounded-lg border border-white/5">
+                                      {['cm', 'm'].map(u => (
+                                        <button 
+                                          key={u}
+                                          onClick={() => setNestingUnits({ ...nestingUnits, partWidth: u as any })}
+                                          className={`text-[8px] font-black px-1.5 py-0.5 rounded transition-all ${nestingUnits.partWidth === u ? 'bg-orange-600 text-white' : 'text-metal-500 hover:text-metal-400'}`}
+                                        >
+                                          {u.toUpperCase()}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    value={nestingUnits.partWidth === 'cm' ? (nestingParams.partWidth || '') : (nestingParams.partWidth ? nestingParams.partWidth / 100 : '')}
+                                    onChange={(e) => {
+                                      const val = parseFloat(e.currentTarget.value.replace(/^0+(?=\d)/, '')) || 0;
+                                      setNestingParams({ ...nestingParams, partWidth: nestingUnits.partWidth === 'cm' ? val : val * 100 });
+                                    }}
+                                    className="w-full bg-transparent border-none p-0 text-2xl font-black focus:ring-0 text-white"
+                                  />
+                                </div>
+                                <div className="space-y-2 bg-white/5 p-4 rounded-3xl border border-white/10 focus-within:border-orange-500/50 transition-all">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] font-black text-metal-500 uppercase">Длина (L)</span>
+                                    <div className="flex gap-1 bg-black/40 p-0.5 rounded-lg border border-white/5">
+                                      {['cm', 'm'].map(u => (
+                                        <button 
+                                          key={u}
+                                          onClick={() => setNestingUnits({ ...nestingUnits, partLength: u as any })}
+                                          className={`text-[8px] font-black px-1.5 py-0.5 rounded transition-all ${nestingUnits.partLength === u ? 'bg-orange-600 text-white' : 'text-metal-500 hover:text-metal-400'}`}
+                                        >
+                                          {u.toUpperCase()}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <input
+                                    type="number"
+                                    step="0.01"
+                                    value={nestingUnits.partLength === 'cm' ? (nestingParams.partLength || '') : (nestingParams.partLength ? nestingParams.partLength / 100 : '')}
+                                    onChange={(e) => {
+                                      const val = parseFloat(e.currentTarget.value.replace(/^0+(?=\d)/, '')) || 0;
+                                      setNestingParams({ ...nestingParams, partLength: nestingUnits.partLength === 'cm' ? val : val * 100 });
+                                    }}
+                                    className="w-full bg-transparent border-none p-0 text-2xl font-black focus:ring-0 text-white"
+                                  />
+                              </div>
+                            </div>
                           </div>
-                          <div className="space-y-1 bg-black/40 px-4 sm:px-5 py-2 sm:py-3 rounded-2xl sm:rounded-3xl border border-white/10">
-                            <span className="text-[10px] sm:text-[11px] font-black text-blue-500 uppercase tracking-tighter">Лист Д (см)</span>
-                            <input
-                              type="number"
-                              step="0.01"
-                              value={nestingParams.sheetLength}
-                              onChange={(e) => setNestingParams({ ...nestingParams, sheetLength: Number(e.target.value) })}
-                              className="w-full bg-transparent border-none p-0 text-base sm:text-lg font-black focus:ring-0 text-white"
-                            />
+  
+                          <div>
+                            <h3 className="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                              <span className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse" /> Партия
+                            </h3>
+                            <div className="bg-white/5 p-4 rounded-3xl border border-white/10 focus-within:border-purple-500/50 transition-all">
+                              <span className="text-[10px] font-black text-metal-500 uppercase block mb-1">Нужно изделий (шт)</span>
+                              <input
+                                type="number"
+                                value={nestingParams.targetParts || ''}
+                                onChange={(e) => setNestingParams({ ...nestingParams, targetParts: parseInt(e.target.value.replace(/^0+(?=\d)/, '')) || 0 })}
+                                className="w-full bg-transparent border-none p-0 text-2xl font-black focus:ring-0 text-white"
+                                placeholder="Количество..."
+                              />
+                            </div>
                           </div>
-                          <div className="space-y-1 bg-blue-600/20 px-4 sm:px-5 py-2 sm:py-3 rounded-2xl sm:rounded-3xl border border-blue-500/30">
-                            <span className="text-[10px] sm:text-[11px] font-black text-blue-400 uppercase tracking-tighter">Изделие Ш (см)</span>
-                            <input
-                              type="number"
-                              step="0.01"
-                              value={nestingParams.partWidth}
-                              onChange={(e) => setNestingParams({ ...nestingParams, partWidth: Number(e.target.value) })}
-                              className="w-full bg-transparent border-none p-0 text-base sm:text-lg font-black focus:ring-0 text-white"
-                            />
+                        </div>
+
+                            {/* Right Side: Results */}
+                            <div className="xl:col-span-8 flex flex-col justify-between gap-8">
+                              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
+                                <div className="p-6 bg-white/5 rounded-[32px] border border-white/10 group hover:bg-white/[0.08] transition-all">
+                                  <p className="text-[10px] font-black text-metal-500 uppercase tracking-widest mb-2">Ширина (W)</p>
+                                  <p className={`font-black text-white ${String(Number(nestingParams.partWidth.toFixed(2))).length > 2 ? 'text-xl' : 'text-2xl'}`}>{Number(nestingParams.partWidth.toFixed(2))} <span className="text-[10px] text-metal-500 uppercase">см</span></p>
+                                </div>
+                                <div className="p-6 bg-white/5 rounded-[32px] border border-white/10 group hover:bg-white/[0.08] transition-all">
+                                  <p className="text-[10px] font-black text-metal-500 uppercase tracking-widest mb-2">Длина (L)</p>
+                                  <p className={`font-black text-white ${String(Number(nestingParams.partLength.toFixed(2))).length > 2 ? 'text-xl' : 'text-2xl'}`}>{Number(nestingParams.partLength.toFixed(2))} <span className="text-[10px] text-metal-500 uppercase">см</span></p>
+                                </div>
+                                <div className="p-6 bg-blue-600/10 rounded-[32px] border border-blue-500/20 group hover:bg-blue-600/20 transition-all">
+                                  <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">Расчёт (ШxД)</p>
+                                  <p className={`font-black text-white ${String(nestingResults.countWidth + 'x' + nestingResults.countLength).length > 3 ? 'text-xl' : 'text-3xl'}`}>{nestingResults.countWidth}x{nestingResults.countLength}</p>
+                                </div>
+                                <div className="p-6 bg-emerald-600/10 rounded-[32px] border border-emerald-500/20 group hover:bg-emerald-600/20 transition-all">
+                                  <p className="text-[10px] font-black text-emerald-500 uppercase tracking-widest mb-2">На 1 лист</p>
+                                  <p className={`font-black text-white ${String(nestingResults.totalParts).length > 2 ? 'text-2xl' : 'text-3xl'}`}>{nestingResults.totalParts} <span className="text-[10px] text-metal-500 uppercase">шт</span></p>
+                                </div>
+                                <div className="p-6 bg-purple-600/10 rounded-[32px] border border-purple-500/20 group hover:bg-purple-600/20 transition-all">
+                                  <p className="text-[10px] font-black text-purple-500 uppercase tracking-widest mb-2">Нужно листов</p>
+                                  <p className={`font-black text-white ${String(nestingResults.sheetsNeeded).length > 2 ? 'text-2xl' : 'text-3xl'}`}>{nestingResults.sheetsNeeded} <span className="text-[10px] text-metal-500 uppercase">шт</span></p>
+                                </div>
+                              </div>
+
+
+                              <div className="grid grid-cols-2 gap-6">
+                                <div className="p-6 bg-red-600/5 rounded-[32px] border border-red-500/10 flex items-center justify-between">
+                                  <div>
+                                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">ОСТАТОК Ш</p>
+                                    <p className={`font-black text-white ${String(Number(nestingResults.wasteWidth.toFixed(2))).length > 2 ? 'text-2xl' : 'text-3xl'}`}>{Number(nestingResults.wasteWidth.toFixed(2))} <span className="text-[10px] text-metal-500">см</span></p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-[9px] font-black text-metal-500 uppercase tracking-widest">ДЛИНА ЛИСТА</p>
+                                    <p className={`font-black text-metal-400 mt-0.5 ${String(Number(nestingParams.sheetLength.toFixed(2))).length > 2 ? 'text-lg' : 'text-xl'}`}>{Number(nestingParams.sheetLength.toFixed(2))} <span className="text-[10px]">см</span></p>
+                                  </div>
+                                </div>
+                                <div className="p-6 bg-red-600/5 rounded-[32px] border border-red-500/10 flex items-center justify-between">
+                                  <div>
+                                    <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-1">ОСТАТОК Д</p>
+                                    <p className={`font-black text-white ${String(Number(nestingResults.wasteLength.toFixed(2))).length > 2 ? 'text-2xl' : 'text-3xl'}`}>{Number(nestingResults.wasteLength.toFixed(2))} <span className="text-[10px] text-metal-500">см</span></p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-[9px] font-black text-metal-500 uppercase tracking-widest">ШИРИНА ЛИСТА</p>
+                                    <p className={`font-black text-metal-400 mt-0.5 ${String(Number(nestingParams.sheetWidth.toFixed(2))).length > 2 ? 'text-lg' : 'text-xl'}`}>{Number(nestingParams.sheetWidth.toFixed(2))} <span className="text-[10px]">см</span></p>
+                                  </div>
+                                </div>
+                              </div>
+
+                        <div className="p-8 sm:p-10 bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-[40px] border border-emerald-400/20 flex flex-col sm:flex-row items-center justify-between gap-8 shadow-2xl shadow-emerald-900/40">
+                          <div className="flex items-center gap-6 w-full sm:w-auto">
+                            <div className="p-5 bg-black/30 text-white rounded-3xl border border-white/10">
+                              <DollarSign size={32} />
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-black text-emerald-200 uppercase tracking-widest">ИТОГО К ОПЛАТЕ</p>
+                              <h3 className="text-2xl font-black text-white uppercase tracking-tight leading-none mt-1">Стоимость изделия</h3>
+                            </div>
                           </div>
-                          <div className="space-y-1 bg-blue-600/20 px-4 sm:px-5 py-2 sm:py-3 rounded-2xl sm:rounded-3xl border border-blue-500/30">
-                            <span className="text-[10px] sm:text-[11px] font-black text-blue-400 uppercase tracking-tighter">Изделие Д (см)</span>
-                            <input
-                              type="number"
-                              step="0.01"
-                              value={nestingParams.partLength}
-                              onChange={(e) => setNestingParams({ ...nestingParams, partLength: Number(e.target.value) })}
-                              className="w-full bg-transparent border-none p-0 text-base sm:text-lg font-black focus:ring-0 text-white"
-                            />
+
+                            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 w-full sm:w-auto">
+                              <div className="w-full sm:w-44 space-y-2 bg-black/30 p-5 rounded-3xl border border-white/10 focus-within:border-white/30 transition-all">
+                                <span className="text-[10px] font-black text-white/50 uppercase tracking-widest">Коэффициент</span>
+                                <input
+                                  type="number"
+                                  step="any"
+                                  value={extraCalc.coeff || ''}
+                                  onChange={(e) => setExtraCalc({ ...extraCalc, coeff: parseFloat(e.currentTarget.value.replace(/^0+(?=\d)/, '')) || 0 })}
+                                  className="w-full bg-transparent border-none p-0 text-3xl font-black focus:ring-0 text-white placeholder:text-white/20"
+                                  placeholder="0"
+                                />
+                              </div>
+
+                                  <div className="text-center sm:text-right flex-shrink-0 min-w-fit">
+                                    <p className={`font-black text-white tracking-tighter tabular-nums drop-shadow-lg leading-none ${
+                                      (nestingParams.partWidth * nestingParams.partLength * extraCalc.coeff * 0.01 * (nestingParams.targetParts || 1)).toFixed(0).length > 5 
+                                      ? 'text-2xl sm:text-3xl lg:text-4xl' 
+                                      : 'text-4xl sm:text-5xl lg:text-6xl'
+                                    }`}>
+                                      {(nestingParams.partWidth * nestingParams.partLength * extraCalc.coeff * 0.01 * (nestingParams.targetParts || 1)).toFixed(0)}
+                                      <span className="text-lg sm:text-xl text-white/70 ml-2">₽</span>
+                                    </p>
+                                  </div>
+                            </div>
+
                         </div>
                       </div>
+                    </div>
                   </div>
-
-                  <div className="mt-6 sm:mt-8 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 relative z-10">
-                      <div className="lg:col-span-12 flex flex-col xl:flex-row items-center justify-between p-6 sm:p-8 bg-white/5 rounded-[32px] sm:rounded-[40px] border border-white/10 backdrop-blur-xl gap-6 sm:gap-10">
-                        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-4 sm:gap-8 w-full xl:w-auto">
-                            <div className="min-w-[80px]">
-                              <p className="text-[10px] font-black text-metal-500 uppercase tracking-widest mb-1">Ширина (W)</p>
-                              <p className="text-xl sm:text-2xl font-black text-white whitespace-nowrap">
-                                {nestingParams.partWidth.toFixed(2)} <span className="text-[10px] text-metal-500 font-bold">см</span>
-                              </p>
-                            </div>
-                            <div className="min-w-[80px]">
-                              <p className="text-[10px] font-black text-metal-500 uppercase tracking-widest mb-1">Длина (L)</p>
-                              <p className="text-xl sm:text-2xl font-black text-white whitespace-nowrap">
-                                {nestingParams.partLength.toFixed(2)} <span className="text-[10px] text-metal-500 font-bold">см</span>
-                              </p>
-                            </div>
-                            <div className="min-w-[80px]">
-                              <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-1">Расчёт</p>
-                              <p className="text-xl sm:text-2xl font-black text-white whitespace-nowrap">
-                                {nestingResults.countWidth}x{nestingResults.countLength}
-                              </p>
-                              <p className="text-[8px] font-bold text-metal-500 uppercase mt-0.5">Ряд х Кол</p>
-                            </div>
-                            <div className="min-w-[80px]">
-                              <p className="text-[10px] font-black text-green-500 uppercase tracking-widest mb-1">Всего</p>
-                              <p className="text-xl sm:text-2xl font-black text-white whitespace-nowrap">{nestingResults.totalParts} <span className="text-[10px] text-metal-500 font-bold">шт</span></p>
-                            </div>
-                          </div>
-
-                          <div className="flex gap-2 sm:gap-4 w-full xl:w-auto">
-                            <div className="flex-1 xl:flex-none text-right px-4 py-2 sm:py-4 bg-black/20 rounded-xl sm:rounded-2xl border border-white/5">
-                              <p className="text-[10px] font-black text-red-500 uppercase opacity-70 mb-1">Остаток Ш</p>
-                              <p className="text-lg sm:text-xl font-black text-white whitespace-nowrap">{nestingResults.wasteWidth.toFixed(2)}<span className="text-[10px] ml-1">см</span></p>
-                            </div>
-                            <div className="flex-1 xl:flex-none text-right px-4 py-2 sm:py-4 bg-black/20 rounded-xl sm:rounded-2xl border border-white/5">
-                              <p className="text-[10px] font-black text-red-500 uppercase opacity-70 mb-1">Остаток Д</p>
-                              <p className="text-lg sm:text-xl font-black text-white whitespace-nowrap">{nestingResults.wasteLength.toFixed(2)}<span className="text-[10px] ml-1">см</span></p>
-                            </div>
-                        </div>
-                      </div>
-                    </div>
                 </div>
               </div>
             )}

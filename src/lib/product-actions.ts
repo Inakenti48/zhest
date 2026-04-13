@@ -321,22 +321,65 @@ export async function updateStock(id: number, newStock: number) {
   revalidatePath('/admin/products');
 }
 
-export async function registerSale(productId: number, quantity: number, totalPrice: number, paymentMethod: string = 'Наличными') {
+export async function registerSale(productId: number, quantity: number, totalPrice: number, paymentMethod: string = 'Наличными', invoiceNo?: string) {
   const product = (await db.prepare('SELECT stock, name FROM products WHERE id = ?').get(productId)) as { stock: number, name: string } | undefined;
   
   if (product && Number(product.stock) >= quantity) {
-    await db.prepare(`
-      INSERT INTO sales (product_id, product_name, quantity, total_price, payment_method)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(productId, product.name, quantity, totalPrice, paymentMethod);
+    const result = await db.prepare(`
+      INSERT INTO sales (product_id, product_name, quantity, total_price, payment_method, invoice_no)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(productId, product.name, quantity, totalPrice, paymentMethod, invoiceNo || null);
 
     await db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?').run(quantity, productId);
     
     revalidatePath('/admin/products');
     revalidatePath('/admin');
-    return { success: true };
+    return { success: true, id: result.lastInsertRowid };
   }
   return { error: 'Недостаточно товара на складе' };
+}
+
+export async function getNextInvoiceNo() {
+  const now = new Date();
+  
+  // Format current date components
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = now.getFullYear();
+  const prefix = `${day}${month}`;
+  
+  // Find the highest sequence number for today's prefix in SQLite
+  // We use prefix-based search which is more robust than sale_date for daily resets
+  const result = await db.prepare(`
+    SELECT invoice_no 
+    FROM sales 
+    WHERE invoice_no LIKE ? || '-%'
+    ORDER BY CAST(SUBSTR(invoice_no, 6) AS INTEGER) DESC
+    LIMIT 1
+  `).get(prefix);
+  
+  let nextNum = 1;
+  if (result?.invoice_no) {
+    const parts = result.invoice_no.split('-');
+    if (parts.length > 1) {
+      const lastNum = parseInt(parts[1]);
+      if (!isNaN(lastNum)) {
+        nextNum = lastNum + 1;
+      }
+    }
+  }
+  
+  const invoiceNo = `${prefix}-${String(nextNum).padStart(3, '0')}`;
+  
+  // Russian month names for date formatting
+  const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+  const formattedDate = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()} г.г. ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  
+  return {
+    invoiceNo,
+    formattedDate,
+    rawDate: now.toISOString()
+  };
 }
 
 export async function saveReportToFile(reportData: any) {

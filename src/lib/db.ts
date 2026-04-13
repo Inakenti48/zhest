@@ -1,5 +1,4 @@
-import { Pool, PoolConfig } from 'pg';
-import Database from 'better-sqlite3';
+import { Database } from 'bun:sqlite';
 import path from 'path';
 
 // Database configurations
@@ -8,7 +7,8 @@ const isPostgres = !!process.env.DATABASE_URL;
 let db: any;
 
 if (isPostgres) {
-  const config: PoolConfig = {
+  const { Pool } = require('pg');
+  const config = {
     connectionString: process.env.DATABASE_URL,
     ssl: process.env.DATABASE_URL?.includes('localhost') ? false : { rejectUnauthorized: false }
   };
@@ -45,23 +45,26 @@ if (isPostgres) {
     }
   };
 } else {
-  // Fallback to SQLite
+  // Fallback to SQLite using Bun's native driver
   const dbPath = path.resolve(process.cwd(), 'zhest.db');
-  db = new Database(dbPath);
+  const sqlite = new Database(dbPath);
   
-  // Sync wrapper
-  const originalPrepare = db.prepare.bind(db);
-  db.prepare = (sql: string) => {
-    const stmt = originalPrepare(sql);
-    return {
-      get: async (...params: any[]) => stmt.get(...params),
-      all: async (...params: any[]) => stmt.all(...params),
-      run: async (...params: any[]) => stmt.run(...params)
-    };
+  db = {
+    prepare: (sql: string) => {
+      const query = sqlite.query(sql);
+      return {
+        get: async (...params: any[]) => query.get(...params),
+        all: async (...params: any[]) => query.all(...params),
+        run: async (...params: any[]) => {
+          const result = query.run(...params) as { lastInsertRowid: number | bigint, changes: number };
+          return { lastInsertRowid: Number(result.lastInsertRowid), changes: result.changes };
+        }
+      };
+    },
+    exec: async (sql: string) => {
+      sqlite.exec(sql);
+    }
   };
-  
-  const originalExec = db.exec.bind(db);
-  db.exec = async (sql: string) => originalExec(sql);
 }
 
 export default db;

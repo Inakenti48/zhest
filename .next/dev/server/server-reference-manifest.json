@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "node": {
     "00372b6f3a16347f082fafc66cf3a8f348d568813a": {
       "workers": {
@@ -198,4 +199,9 @@
   },
   "edge": {},
   "encryptionKey": "/axc/Dj92G/TaBPX2bLEWlxXafF73Doe97/yFp+VFg0="
+=======
+  "node": {},
+  "edge": {},
+  "encryptionKey": "31pJPvM68QbF5yv1IuCuejxb8ko3ZzKhj5ROM9cGeHY="
+>>>>>>> 660ecae (Auto-sync after agent response)
 }

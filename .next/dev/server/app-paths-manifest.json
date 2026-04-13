@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "/_not-found/page": "app/_not-found/page.js",
   "/admin/employees/page": "app/admin/employees/page.js",
   "/admin/workspace/page": "app/admin/workspace/page.js",
@@ -6,5 +7,7 @@
   "/api/employees/route": "app/api/employees/route.js",
   "/api/work-logs/route": "app/api/work-logs/route.js",
   "/api/workers/route": "app/api/workers/route.js",
+=======
+>>>>>>> 660ecae (Auto-sync after agent response)
   "/page": "app/page.js"
 }
