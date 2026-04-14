@@ -9,12 +9,16 @@ import {
   Banknote,
   CreditCard,
   TrendingUp,
-  DollarSign
+  DollarSign,
+  Package,
+  Truck
 } from 'lucide-react';
+import { getOrders } from '@/lib/product-actions';
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<any[]>([]);
   const [sales, setSales] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
 
@@ -28,15 +32,32 @@ export default function ReportsPage() {
       .then(res => res.json())
       .then(setSales)
       .catch(() => setSales([]));
+
+    getOrders().then(setOrders).catch(() => setOrders([]));
   }, []);
 
-  const filteredReports = reports.filter(r => {
+  const completedOrders = orders.filter(o => o.status === 'completed' || o.status === 'delivered');
+
+  const allItems = [
+    ...reports.map(r => ({ ...r, source: 'sale', timestamp: r.timestamp })),
+    ...completedOrders.map(o => ({
+      product_name: `Заказ №${o.id}: ${o.customer_name}`,
+      quantity: 1,
+      unit: 'зак',
+      total_price: o.total_price,
+      payment_method: 'Наличными', // Default for orders for now
+      timestamp: o.created_at,
+      source: 'order'
+    }))
+  ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+  const filteredItems = allItems.filter(r => {
     const matchesSearch = r.product_name?.toLowerCase().includes(search.toLowerCase());
     const matchesType = filter === 'all' || r.payment_method === filter;
     return matchesSearch && matchesType;
-  }).reverse();
+  });
 
-  const totalRevenue = filteredReports.reduce((sum, r) => sum + (r.total_price || 0), 0);
+  const totalRevenue = filteredItems.reduce((sum, r) => sum + (r.total_price || 0), 0);
   
   const totalProfit = sales.reduce((sum, s) => {
     const cost = s.buy_price ? s.buy_price * s.quantity : 0;
@@ -101,53 +122,57 @@ export default function ReportsPage() {
                   <th className="p-4 text-[10px] font-black uppercase text-metal-500 text-right">Сумма</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/5">
-                {filteredReports.map((report, idx) => (
-                  <tr key={idx} className="hover:bg-white/5 transition-colors group">
-                    <td className="p-4">
-                      <p className="font-black text-xs text-white">
-                        {new Date(report.timestamp).toLocaleDateString('ru-RU')}
-                      </p>
-                      <p className="text-[10px] text-metal-500 font-bold">
-                        {new Date(report.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
-                      </p>
-                    </td>
-                    <td className="p-4">
-                      <p className="font-black text-xs text-white uppercase">{report.product_name}</p>
-                      {report.customer && (
-                        <p className="text-[10px] text-blue-400 font-bold">Клиент: {report.customer}</p>
-                      )}
-                    </td>
-                    <td className="p-4 text-center">
-                      <span className="px-2 py-1 rounded bg-white/5 text-[10px] font-black text-metal-400">
-                        {report.quantity} {report.unit}
-                      </span>
-                    </td>
-                    <td className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        {report.payment_method === 'Перевод' ? (
-                          <CreditCard size={14} className="text-purple-400" />
-                        ) : (
-                          <Banknote size={14} className="text-green-400" />
+                <tbody className="divide-y divide-white/5">
+                  {filteredItems.map((report: any, idx) => (
+                    <tr key={idx} className="hover:bg-white/5 transition-colors group">
+                      <td className="p-4">
+                        <p className="font-black text-xs text-white">
+                          {new Date(report.timestamp).toLocaleDateString('ru-RU')}
+                        </p>
+                        <p className="text-[10px] text-metal-500 font-bold">
+                          {new Date(report.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
+                        </p>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          {report.source === 'order' && <Truck size={14} className="text-blue-400" />}
+                          <p className="font-black text-xs text-white uppercase">{report.product_name}</p>
+                        </div>
+                        {report.customer && (
+                          <p className="text-[10px] text-blue-400 font-bold">Клиент: {report.customer}</p>
                         )}
-                        <span className={`text-[10px] font-black uppercase ${report.payment_method === 'Перевод' ? 'text-purple-400' : 'text-green-400'}`}>
-                          {report.payment_method}
+                      </td>
+                      <td className="p-4 text-center">
+                        <span className="px-2 py-1 rounded bg-white/5 text-[10px] font-black text-metal-400">
+                          {report.quantity} {report.unit}
                         </span>
-                      </div>
-                    </td>
-                    <td className="p-4 text-right">
-                      <p className="font-black text-sm text-white">{report.total_price} ₽</p>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {filteredReports.length === 0 && (
-                <div className="py-20 text-center">
-                  <FileSpreadsheet size={48} className="mx-auto text-white/5 mb-4" />
-                  <p className="text-metal-500 font-bold italic text-sm">Данных за выбранный период нет</p>
-                </div>
-            )}
+                      </td>
+                      <td className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          {report.payment_method === 'Перевод' ? (
+                            <CreditCard size={14} className="text-purple-400" />
+                          ) : (
+                            <Banknote size={14} className="text-green-400" />
+                          )}
+                          <span className={`text-[10px] font-black uppercase ${report.payment_method === 'Перевод' ? 'text-purple-400' : 'text-green-400'}`}>
+                            {report.payment_method}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="p-4 text-right">
+                        <p className="font-black text-sm text-white">{report.total_price} ₽</p>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {filteredItems.length === 0 && (
+                  <div className="py-20 text-center">
+                    <FileSpreadsheet size={48} className="mx-auto text-white/5 mb-4" />
+                    <p className="text-metal-500 font-bold italic text-sm">Данных за выбранный период нет</p>
+                  </div>
+              )}
+
           </div>
         </div>
 
@@ -193,12 +218,12 @@ export default function ReportsPage() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-[10px] text-metal-500 font-black uppercase">Всего транзакций</span>
-                <span className="font-black text-white">{filteredReports.length}</span>
+                <span className="font-black text-white">{filteredItems.length}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-[10px] text-metal-500 font-black uppercase">Средний чек</span>
                 <span className="font-black text-white">
-                  {filteredReports.length > 0 ? (totalRevenue / filteredReports.length).toFixed(0) : 0} ₽
+                  {filteredItems.length > 0 ? (totalRevenue / filteredItems.length).toFixed(0) : 0} ₽
                 </span>
               </div>
             </div>

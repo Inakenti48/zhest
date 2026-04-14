@@ -1,4 +1,6 @@
 import { getSalesStats, getRecentSales, getOrders } from '@/lib/product-actions';
+import { getCurrentRole } from '@/lib/auth-actions';
+import { redirect } from 'next/navigation';
 import { 
   TrendingUp, 
   DollarSign, 
@@ -12,6 +14,11 @@ import OrderList from '@/components/OrderList';
 import RecentSalesFeed from '@/components/RecentSalesFeed';
 
 export default async function AdminDashboard() {
+  const role = await getCurrentRole();
+  if (role === 'worker') {
+    redirect('/admin/orders');
+  }
+
   const stats = await getSalesStats();
   const recentSales = await getRecentSales();
   const orders = await getOrders();
