@@ -58,9 +58,9 @@ export default function ClientLandingWrapper({ products }: { products: Product[]
               {/* Admin Button - Above "Start Work" */}
               <Link href="/admin">
                 <button className="group relative px-8 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-black text-lg transition-all hover:bg-white/10 hover:border-blue-500/30 overflow-hidden">
-                  <span className="relative z-10 flex items-center gap-3">
-                    <Settings size={20} className="text-blue-400" /> АДМИНКА
-                  </span>
+                    <span className="relative z-10 flex items-center gap-3">
+                      <LogIn size={20} className="text-blue-400" /> ВХОД В ЦЕХ
+                    </span>
                 </button>
               </Link>
 
@@ -76,24 +76,10 @@ export default function ClientLandingWrapper({ products }: { products: Product[]
               </button>
             </div>
 
-            <div className="flex justify-center mt-8">
-                <div className="flex -space-x-3">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="w-10 h-10 rounded-full border-2 border-slate-950 bg-slate-800 flex items-center justify-center text-[10px] font-bold overflow-hidden relative">
-                      <Image 
-                        src={`https://i.pravatar.cc/100?img=${i+10}`} 
-                        alt="user" 
-                        fill
-                        className="object-cover"
-                        sizes="40px"
-                      />
-                    </div>
-                  ))}
-                  <div className="h-10 px-4 rounded-full border-2 border-slate-950 bg-slate-900 flex items-center justify-center text-[10px] font-bold text-metal-400">
-                    +12 мастеров
-                  </div>
-                </div>
-
+            <div className="flex justify-center mt-12">
+              <p className="text-metal-500 text-sm uppercase tracking-[0.3em] font-black opacity-80 animate-pulse">
+                Профессиональное производство металлоизделий
+              </p>
             </div>
           </motion.div>
 

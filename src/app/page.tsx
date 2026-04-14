@@ -17,11 +17,8 @@ export default async function LandingPage() {
       <footer className="py-20 border-t border-white/5 bg-black/50 text-center relative z-10">
         <div className="max-w-4xl mx-auto px-6">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-            <Link href="/login" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-metal-500 hover:text-white hover:bg-white/10 transition-all text-xs font-black uppercase tracking-widest">
-              <LogIn size={14} /> Админка
-            </Link>
-            <Link href="/staff" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-green-500/10 border border-green-500/20 text-green-400 hover:text-green-300 hover:bg-green-500/20 transition-all text-xs font-black uppercase tracking-widest">
-              <Users size={14} /> Вход для сотрудников
+            <Link href="/login" className="inline-flex items-center gap-4 px-8 py-4 rounded-2xl bg-blue-600 border border-blue-500 text-white hover:bg-blue-700 transition-all text-sm font-black uppercase tracking-widest shadow-2xl shadow-blue-600/30">
+              <LogIn size={20} /> ВХОД В ЦЕХ
             </Link>
           </div>
           <p className="text-metal-600 text-xs uppercase tracking-widest font-bold">

@@ -269,13 +269,29 @@ export async function getOrders() {
   return ordersWithItems;
 }
 
-export async function createOrder(customerInfo: { name: string, phone: string, address: string }, cart: any[]) {
+export async function createOrder(
+  customerInfo: { name: string, phone: string, address: string }, 
+  cart: any[], 
+  orderType: string = 'internal',
+  urgentUntil: string | null = null,
+  costOfWork: number = 0,
+  dynamicFields: any[] = []
+) {
   const totalPrice = cart.reduce((sum, item) => sum + (item.sell_price * item.quantity), 0);
   
   const result = await db.prepare(`
-    INSERT INTO orders (customer_name, customer_phone, customer_address, total_price)
-    VALUES (?, ?, ?, ?)
-  `).run(customerInfo.name, customerInfo.phone, customerInfo.address, totalPrice);
+    INSERT INTO orders (customer_name, customer_phone, customer_address, total_price, type, urgent_until, cost_of_work, dynamic_fields)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    customerInfo.name, 
+    customerInfo.phone, 
+    customerInfo.address, 
+    totalPrice, 
+    orderType, 
+    urgentUntil, 
+    costOfWork, 
+    JSON.stringify(dynamicFields)
+  );
 
   const orderId = result.lastInsertRowid;
 
@@ -285,11 +301,43 @@ export async function createOrder(customerInfo: { name: string, phone: string, a
       VALUES (?, ?, ?, ?, ?)
     `).run(orderId, item.id, item.quantity, item.sell_price, item.unit);
 
-    await db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?').run(item.quantity, item.id);
+    if (item.id) {
+      await db.prepare('UPDATE products SET stock = stock - ? WHERE id = ?').run(item.quantity, item.id);
+    }
   }
 
+  revalidatePath('/admin/orders');
   revalidatePath('/admin');
   return { success: true, orderId };
+}
+
+export async function takeOrder(orderId: number, workerId: number) {
+  const startTime = new Date().toISOString();
+  await db.prepare(`
+    UPDATE orders 
+    SET status = 'in_progress', worker_id = ?, start_time = ? 
+    WHERE id = ?
+  `).run(workerId, startTime, orderId);
+  revalidatePath('/admin/orders');
+}
+
+export async function submitOrderForReview(orderId: number, photoUrl: string) {
+  const endTime = new Date().toISOString();
+  await db.prepare(`
+    UPDATE orders 
+    SET status = 'review', end_time = ?, completion_photo = ? 
+    WHERE id = ?
+  `).run(endTime, photoUrl, orderId);
+  revalidatePath('/admin/orders');
+}
+
+export async function approveOrder(orderId: number, finalStatus: 'delivered' | 'completed') {
+  await db.prepare(`
+    UPDATE orders 
+    SET status = ? 
+    WHERE id = ?
+  `).run(finalStatus, orderId);
+  revalidatePath('/admin/orders');
 }
 
 export async function updateOrderStatus(id: number, status: string) {
@@ -384,4 +432,14 @@ export async function getNextInvoiceNo() {
 
 export async function saveReportToFile(reportData: any) {
   return { success: true };
+}
+
+export async function getWorkers() {
+  return await db.prepare('SELECT id, username as name FROM users WHERE role = "worker"').all();
+}
+
+export async function deleteOrder(id: number) {
+  await db.prepare('DELETE FROM order_items WHERE order_id = ?').run(id);
+  await db.prepare('DELETE FROM orders WHERE id = ?').run(id);
+  revalidatePath('/admin/orders');
 }

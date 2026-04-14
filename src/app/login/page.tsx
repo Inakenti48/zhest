@@ -53,20 +53,25 @@ setLoading(false);
           <p className="text-metal-400 mt-2">Жестяной Цех - Управление</p>
         </div>
 
-        <form action={handleAction} className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-metal-300 ml-1">Логин</label>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-metal-500 w-5 h-5" />
-              <input 
-                name="username"
-                type="text" 
-                required
-                className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-white"
-                placeholder="Введите логин"
-              />
-            </div>
-          </div>
+            <form action={handleAction} className="space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-metal-300 ml-1">Личный пароль</label>
+                  <div className="relative">
+                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-metal-500 w-5 h-5" />
+                    <input 
+                      name="password"
+                      type="password" 
+                      required
+                      autoFocus
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all text-white placeholder:text-metal-600 text-center text-2xl tracking-[0.5em]"
+                      placeholder="••••"
+                    />
+                  </div>
+                </div>
+              </div>
+
+
 
           {error && (
             <motion.p 

@@ -17,10 +17,12 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getCurrentRole, getCurrentUser } from '@/lib/auth-actions';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Дашборд', href: '/admin' },
+  { icon: ShoppingCart, label: 'Заказы', href: '/admin/orders' },
   { icon: Package, label: 'Товары', href: '/admin/products' },
   { icon: TrendingUp, label: 'Продажи', href: '/admin/sales' },
   { icon: Calculator, label: 'Касса', href: '/admin/kassa' },
@@ -28,17 +30,44 @@ const menuItems = [
   { icon: Users, label: 'Сотрудники', href: '/admin/employees' },
   { icon: Briefcase, label: 'Зона работы', href: '/admin/workspace' },
   { icon: FileSpreadsheet, label: 'Отчёты', href: '/admin/reports' },
+  { icon: Users, label: 'Аккаунты', href: '/admin/accounts' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string>('guest');
+  const [userName, setUserName] = useState<string>('');
+
+  useEffect(() => {
+    async function fetchUser() {
+      const role = await getCurrentRole();
+      const name = await getCurrentUser();
+      setUserRole(role);
+      setUserName(name);
+    }
+    fetchUser();
+  }, []);
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
   };
+
+  const filteredMenuItems = menuItems.filter(item => {
+    if (userRole === 'admin') return true;
+    if (userRole === 'admin2') {
+      return ['Дашборд', 'Заказы', 'Продажи', 'Касса', 'Онлайн-магазин', 'Зона работы', 'Аккаунты'].includes(item.label);
+    }
+    if (userRole === 'office_manager') {
+      return ['Дашборд', 'Заказы', 'Продажи', 'Касса', 'Онлайн-магазин', 'Аккаунты'].includes(item.label);
+    }
+    if (userRole === 'worker') {
+      return ['Дашборд', 'Заказы', 'Аккаунты'].includes(item.label); 
+    }
+    return false;
+  });
 
   return (
     <div className="min-h-screen text-white flex bg-[#030712]">
@@ -51,10 +80,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </h2>
           </Link>
           <p className="text-[8px] text-metal-500 font-black tracking-[0.3em] uppercase mt-1">Industrial Control Panel</p>
+          <div className="mt-4 px-3 py-2 bg-white/5 rounded-xl border border-white/5">
+            <p className="text-[10px] font-black uppercase text-blue-500">{userName}</p>
+            <p className="text-[8px] text-metal-500 uppercase font-bold">{userRole === 'admin' ? 'Главный админ' : userRole === 'admin2' ? 'Админ 2' : userRole === 'office_manager' ? 'Офис менеджер' : 'Работник'}</p>
+          </div>
         </div>
 
         <nav className="flex-1 px-4 space-y-1 mt-6">
-          {menuItems.map((item) => {
+          {filteredMenuItems.map((item) => {
+
             const isActive = pathname === item.href;
             return (
               <Link key={item.href} href={item.href}>
